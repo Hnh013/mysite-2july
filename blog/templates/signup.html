@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+  <h2>Sign up here plesse</h2>
+  <form method="post">
+      {% csrf_token %}
+      <div class="jumbotron">
+      <div class="row">
+          <div class="col-8">
+              <div class="row">
+                <div class="col-6">
+                    {{ form.first_name|as_crispy_field }}
+                </div>
+                <div class="col-6">
+                    {{ form.last_name|as_crispy_field }}
+                </div>
+             </div>
+             
+             <div class="row">
+                <div class="col-6">
+                    {{ form.username|as_crispy_field }}
+                </div>
+                <div class="col-6">
+                    {{ form.email|as_crispy_field }}
+                </div>
+             </div>
+             <div class="row">
+                 <div class="col-6">
+                    {{ form.password1|as_crispy_field }}
+                 </div>
+                 <div class="col-6">
+                    {{ form.password2|as_crispy_field }}
+                 </div>
+              </div>
+              <div class="row">
+                
+                <div class="col-6">
+                    {{ profile_form.user_role|as_crispy_field }}
+                </div>
+             </div>
+               <p align="center">
+               <button type="submit" class='btn btn-success'>Sign up</button>
+               </p>
+          </div>
+          <div class='col-4'>qerefeeeeeeeeeeeeee<br>qerefeeeeeeeeeeeeee<br>qerefeeeeeeeeeeeeee<br>qerefeeeeeeeeeeeeee<br></div>
+          </div>
+      </div>
+  </form>
+{% endblock %}
