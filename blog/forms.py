@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import Profile, Astro_Profile, Wallet
 
 
 class SignupForm(UserCreationForm):
@@ -21,3 +21,14 @@ class ProfileForm(forms.ModelForm):
 		model = Profile
 		fields = ('user_role',) 
 
+
+class AstroProfileForm(forms.ModelForm):
+	
+	class Meta:
+		model = Astro_Profile
+		fields = ('skill','experience','origin') 
+
+class RechargeForm(forms.ModelForm):
+	class Meta:
+		model = Wallet
+		fields = ('balance',)

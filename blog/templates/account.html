@@ -1,9 +1,25 @@
-
-
+{% extends 'base.html' %}
 {% block content %}
-<h1>   {{ pro }}  <h1>
+{% if user.is_authenticated %}
+{% load crispy_forms_tags %}
+<h1>  Hello {{ user.username }} !  <h1>
 
-{{ U }}
+{% if user.profile.user_role == 'Person' %}
+You are a person go to home screen<h1>NOT STAFF</h1>Logout link here!!!
+{% else %}
+<h3> Just another step and you're all set up!</h3>
+<form method="POST">
+	{% csrf_token %}
+	{{ data_form|crispy }}
+	<p align="center">
+    <button type="submit" class='btn btn-success'>Sign up</button></p>
+</form>
+{% endif %}
 
+{% else %}
+
+
+
+{% endif %}
 
 {% endblock %}

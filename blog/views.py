@@ -1,17 +1,24 @@
-
+from django.db.models import F
+from django.urls import reverse
+from django.http import JsonResponse
 # Create your views here.
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
-from .forms import SignupForm , ProfileForm
+from .forms import SignupForm , ProfileForm, AstroProfileForm, RechargeForm
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from .tokens import account_activation_token
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import User, Profile, Wallet
 from django.core.mail import send_mail
+from django.contrib.auth.decorators import login_required
+
+import stripe
+
+stripe.api_key = ('sk_test_51GzwicFlMZrJNY0xzkbFfyuVlnGK2Fuu77qFgpsCdMjTuDT8aCTeh9bIUxmXMZmFCRSx0WLtnGQb7598hFFXcldp00xF0KKieG')
 
 def Convert(string):
 	li = list(string.split(" "))
@@ -21,8 +28,9 @@ def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         profile_form = ProfileForm(request.POST)
+        recharge_form = RechargeForm(request.POST)
 
-        if form.is_valid() and profile_form.is_valid():
+        if form.is_valid() and profile_form.is_valid() and recharge_form.is_valid():
 
             user = form.save(commit=True)
             user.is_active = False
@@ -32,6 +40,13 @@ def signup(request):
             profile.user = user
 
             profile.save()
+
+            recharge = recharge_form.save(commit=False)
+            recharge.user = user
+
+            recharge.save()
+
+
 
             current_site = get_current_site(request)
             mail_subject = 'Activate your blog account.'
@@ -50,7 +65,8 @@ def signup(request):
     else:
         form = SignupForm()
         profile_form = ProfileForm()
-    return render(request, 'signup.html', {'form': form, 'profile_form':profile_form})
+        recharge_form = RechargeForm()
+    return render(request, 'signup.html', {'form': form, 'profile_form':profile_form, 'recharge_form':recharge_form})
 
 
 
@@ -66,29 +82,36 @@ def activate(request, uidb64, token):
         user.is_staff = True
         pro = user
         user.save()
-        #login(request, user)
-        # return redirect('home')
+        login(request, user)
 
-        return render(request, 'account.html', {'pro':pro})
+
+        return redirect('confirmed_account')
+
+
         
     else:
         return HttpResponse('Activation link is invalid!')
 
+def confirmed_account(request):
+    if request.method == 'POST':
+        data_form = AstroProfileForm(request.POST)
 
-def account(request, pro):
-    try:
-        U = User.objects.filter(username=pro)
-        U.save()
-    except User.DoesNotExist:
-        raise Http404("User not exixt")
+        if data_form.is_valid():
+            data = data_form.save(commit=False)
+            data = request.user.profile
+
+            data.save()
+                                     
+            return redirect('logout')
+    else:
+        data_form = AstroProfileForm()
+    return render(request, 'account.html', {'data_form': data_form})
+
+def index(request):
+    return render(request, 'index.html')
 
 def home(request):
-    return render('home')
-
-
-
-
-    return render(request, 'account.html', {'pro':pro})
+    return render(request, 'home.html')
 
 def loginPage(request):
     if request.user.is_authenticated:
@@ -113,3 +136,37 @@ def loginPage(request):
 def logout_view(request):
     logout(request)
     return redirect('logout')
+
+@login_required
+def recharge(request):
+
+    return render(request, 'recharge.html')
+
+@login_required
+def charge(request):
+    if request.method == "POST":
+        amount = int(request.POST['amount'])
+
+        print('Data:', request.POST)
+
+        amount = int(request.POST['amount'])
+
+        customer = stripe.Customer.create(
+            email=request.POST['email'],
+            name=request.POST['nickname'],
+            source=request.POST['stripeToken']
+            )
+
+        charge = stripe.Charge.create(
+            customer=customer,
+            amount=amount*100,
+            currency='INR',
+            description="Donation"
+            )
+
+        Wallet.objects.filter(balance=request.user.wallet.balance).update(balance=F('balance')+ amount)
+
+        return redirect('recharge')
+    return redirect('recharge')
+
+

@@ -23,3 +23,8 @@ class Astro_Profile(models.Model):
 		return self.profile.user.username
 
 
+class Wallet(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE) 
+	balance = models.IntegerField(default=100)
+	def __str__(self):
+		return self.user.username

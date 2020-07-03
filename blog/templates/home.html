@@ -1,6 +1,47 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
-  <h2>Welcome, {{ user.get_full_name }} <small>{{ user.username }}</small>!</h2>
-  <p>Your email address: {{ user.email }}</p>
+{% if user.is_authenticated %}
+
+<h1>  Welcome {{ user.username}}  <h1>
+	{{ user.profile.user_role }}
+
+<h3>User Detail</h3>
+<ul>
+<li>First Name : {{ user.first_name}}</li>
+<li>Last Name : {{ user.last_name}}</li>
+<li>Username: {{ user.username}}</li>
+<li>Email :{{ user.email}}</li>
+</ul>
+
+<h3>User Profile Detail</h3>
+<ul>
+	<li>Role : {{ user.profile.user_role }}</li>
+</ul>
+
+<h3>User Wallet Detail</h3>
+<ul>
+	<li>Wallet : {{ user.wallet.balance }}</li>
+</ul>
+
+
+{% if user.profile.user_role != 'Person' %}
+<h3>Astrologer Profile Details </h3>
+<ul>	
+	<li> Skills : {{ user.profile.astro_profile.skill}}</li>
+	<li> Experience : {{ user.profile.astro_profile.experience}}</li>
+	<li> Origin :{{ user.profile.astro_profile.origin}}</li>
+</ul>
+{% endif %}
+
+
+
+{% else %}
+
+<p>You are not authorized to view this page without credentials </p>
+Kindly Login <a href="{% url 'login' %}">LOGIN now</a>
+
+{% endif %}
+
 {% endblock %}
